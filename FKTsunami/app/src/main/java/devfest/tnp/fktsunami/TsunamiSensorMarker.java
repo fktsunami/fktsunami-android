@@ -10,14 +10,21 @@ import org.json.JSONObject;
 
 import java.sql.Struct;
 
-public class MapMarker {
+public class TsunamiSensorMarker {
     private double lat;
     private double lng;
     private String gatewayId;
     private double force;
     private Gyroscope gyroscope;
 
-    public MapMarker( String gatewayId,double lat, double lng, double force, Gyroscope gyroscope) {
+    public TsunamiSensorMarker() {
+        lat = 0;
+        lng = 0;
+        gatewayId = "Unknown";
+        gyroscope = new Gyroscope(0, 0, 0);
+    }
+
+    public TsunamiSensorMarker(String gatewayId, double lat, double lng, double force, Gyroscope gyroscope) {
         this.lat = lat;
         this.lng = lng;
         this.gatewayId = gatewayId;
@@ -63,6 +70,10 @@ public class MapMarker {
 
     public void setGyroscope(Gyroscope gyroscope) {
         this.gyroscope = gyroscope;
+    }
+
+    public void setGyroscope(JSONObject object){
+        
     }
 
 }

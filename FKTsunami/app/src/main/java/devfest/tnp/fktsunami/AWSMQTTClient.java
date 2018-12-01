@@ -142,7 +142,6 @@ class AwsMqttClient {
 
     private void mqttConnect() {
         try {
-
             mMqttManager.connect(mCredentialsProvider, (awsIotMqttClientStatus, throwable) -> {
                 mStatus = MqttClientStatus.fromAwsName(awsIotMqttClientStatus.name());
                 if (mMqttListener != null) {

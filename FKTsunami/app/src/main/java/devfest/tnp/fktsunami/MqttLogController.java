@@ -78,16 +78,21 @@ public class MqttLogController implements LogController, MqttListener {
     }
 
     @Override
-    public void onMessageReceived(String fromTopic, String message) {
+    public void onMessageReceived(String fromTopic, String message) throws JSONException {
         Log.d("onMessageReceived",message);
-        if(listener!=null) listener.onMessage(fromTopic, message);
-
+//        listener.onMessage(fromTopic, message);
+        if (fromTopic.contains("/tsunamiSensor")) {
+            Log.d(TAG, "Process TsunamiSensor");
+            listener.onHandleSensorMessage(fromTopic, message);
+        }
     }
 
     OnMessageListener listener;
 
     public interface OnMessageListener{
         void onMessage(String topic, String message) throws JSONException;
+
+        void onHandleSensorMessage(String topic, String message) throws JSONException;
     }
 
 

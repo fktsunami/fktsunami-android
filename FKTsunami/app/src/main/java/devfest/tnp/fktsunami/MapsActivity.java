@@ -1,6 +1,5 @@
 package devfest.tnp.fktsunami;
 
-import android.graphics.Camera;
 import android.support.v4.app.FragmentActivity;
 import android.os.Bundle;
 import android.util.Log;
@@ -12,7 +11,6 @@ import com.google.android.gms.maps.SupportMapFragment;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.MarkerOptions;
 
-import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.util.ArrayList;
@@ -23,7 +21,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     private static final String REGION = "us-west-2";
 
     private GoogleMap mMap;
-    private ArrayList<MapMarker> mapMarkerList = new ArrayList<>();
+    private ArrayList<TsunamiSensorMarker> mapMarkerList = new ArrayList<>();
 
     private AwsMqttClient mAwsMqttClient;
 
@@ -48,14 +46,14 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         return false;
     }
 
-    public void addMarker(MapMarker mapMarker) {
+    public void addMarker(TsunamiSensorMarker mapMarker) {
         mapMarkerList.add(mapMarker);
         LatLng latLng = new LatLng(mapMarker.getLat(), mapMarker.getLng());
         mMap.addMarker(new MarkerOptions().position(latLng)).setTitle(mapMarker.getGatewayId());
         mMap.moveCamera(CameraUpdateFactory.newLatLng(latLng));
     }
 
-    public void updateMarker(MapMarker mapMarker) {
+    public void updateMarker(TsunamiSensorMarker mapMarker) {
         for (int i = 0; i < mapMarkerList.size(); i++) {
             if (mapMarker.getGatewayId().equals(mapMarkerList.get(i).getGatewayId())) {
                 mapMarkerList.set(i, mapMarker);
@@ -64,13 +62,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         }
     }
 
-    public MapMarker convertToMapMarker(String message) {
-        JSONObject object = null;
-        try {
-            object = new JSONObject(message);
-        } catch (JSONException e) {
-            e.printStackTrace();
-        }
+    public TsunamiSensorMarker convertToMapMarker(JSONObject object) {
         double lat = object.optDouble("lat");
         double lng = object.optDouble("lng");
         double force = object.optDouble("force");
@@ -81,7 +73,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
 
         String sensorID = object.optString("sensorID");
 
-        MapMarker mapMarker = new MapMarker(sensorID, lat, lng, force, new Gyroscope(x, y, z));
+        TsunamiSensorMarker mapMarker = new TsunamiSensorMarker(sensorID, lat, lng, force, new Gyroscope(x, y, z));
         return mapMarker;
     }
 
@@ -100,13 +92,21 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
 //        mAwsMqttClient = new AwsMqttClient(HOST,ID,REGION);
         MqttLogController mqttLogController = new MqttLogController();
         mqttLogController.listener = new MqttLogController.OnMessageListener() {
-
             @Override
-            public void onMessage(String topic, String message) throws JSONException {
-                Log.d("Marker Object",convertToMapMarker(message).toString());
+            public void onMessage(String topic, String message)  {
+              Log.d("onMessage",message);
             }
 
+            @Override
+            public void onHandleSensorMessage(String topic, String message) {
+                Log.d("onHandleSensorMessage",message);
+
+            }
         };
 
     }
+//
+//    public synchronized void updateOrCreateTsunamiSensor(String sensorId, String) {
+//
+//    }
 }
