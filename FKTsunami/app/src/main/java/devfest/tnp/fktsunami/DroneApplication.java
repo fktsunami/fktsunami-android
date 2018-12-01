@@ -9,6 +9,7 @@ public class DroneApplication extends Application {
         super.onCreate();
         sInstance = this;
     }
+
     public static DroneApplication getApplication(){
         return sInstance;
     }
