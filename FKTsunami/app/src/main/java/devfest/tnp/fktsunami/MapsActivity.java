@@ -12,20 +12,16 @@ import android.support.v4.content.ContextCompat;
 import android.util.Log;
 
 import com.google.android.gms.common.api.GoogleApiClient;
-import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.SupportMapFragment;
-import com.google.android.gms.maps.model.LatLng;
-import com.google.android.gms.maps.model.Marker;
-import com.google.android.gms.maps.model.MarkerOptions;
 
 import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.util.ArrayList;
 
-public class MapsActivity extends FragmentActivity implements OnMapReadyCallback,LocationListener,Runnable {
+public class MapsActivity extends FragmentActivity implements OnMapReadyCallback, LocationListener {
     // config
     private static final String HOST = "a3n0rmdkx656cj-ats.iot.us-west-2.amazonaws.com";
     private static final String ID = "us-west-2:6edcd2e6-3900-4caa-adf4-2b082359d4fa";
@@ -39,9 +35,6 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     GoogleApiClient mGoogleApiClient;
 
     private ArrayList<SensorMarker> sensorDataList = new ArrayList<>();
-    private ArrayList<Marker> markers = new ArrayList<>();
-
-    private AwsMqttClient mAwsMqttClient;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -57,8 +50,8 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     @Override
     public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults);
-        if(grantResults.length >0 && grantResults[0]==PackageManager.PERMISSION_GRANTED ){
-            if(ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION)==PackageManager.PERMISSION_GRANTED){
+        if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+            if (ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
                 locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 0, 0, locationListener);
             }
         }
@@ -75,24 +68,13 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         return -1;
     }
 
-    public void addSensorMarker(JSONObject sensorData) {
-        Log.d("Debug", sensorData.toString());
-
-        String sensorId = sensorData.optString("sensorId");
-        String gatewayId = sensorData.optString("gatewayId");
-        Double lat = sensorData.optDouble("lat");
-        Double lng = sensorData.optDouble("lng");
-        Double force = sensorData.optDouble("force");
-        JSONObject gyroscopeJSON = sensorData.optJSONObject("gyroScope");
-
-//        SensorMarker newSensor = new SensorMarker(sensorId, gatewayId, lat, lng, force, gyroscopeJSON);
-
+    public void addSensorMarker(SensorMarker sensorMarker) {
+        sensorDataList.add(sensorMarker);
         try {
             runOnUiThread(new Runnable() {
                 @Override
                 public void run() {
-                    LatLng latLng = new LatLng(10, 108);
-                    mMap.addMarker(new MarkerOptions().position(latLng));
+                    sensorMarker.addToMap(mMap);
                 }
             });
         } catch (Exception e) {
@@ -100,12 +82,17 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         }
     }
 
-    public void updateSensorMarker(SensorMarker mapMarker) {
-        for (int i = 0; i < sensorDataList.size(); i++) {
-            if (mapMarker.getGatewayId().equals(sensorDataList.get(i).getGatewayId())) {
-                sensorDataList.set(i, mapMarker);
-                break;
-            }
+    public void updateSensorMarker(SensorMarker sensorMarker, int index) {
+
+        try {
+            runOnUiThread(new Runnable() {
+                @Override
+                public void run() {
+                    sensorDataList.get(index).updateSensorMarker(sensorMarker,mMap);
+                }
+            });
+        } catch (Exception e) {
+            Log.d("Exception", e.toString());
         }
 
     }
@@ -122,7 +109,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         double z = gyroscope.optDouble("gyroscope_z");
 
 
-        SensorMarker mapMarker = new SensorMarker(sensorId,gatewayId, lat, lng, force, new Gyroscope(x, y, z));
+        SensorMarker mapMarker = new SensorMarker(sensorId, gatewayId, lat, lng, force, new Gyroscope(x, y, z));
         return mapMarker;
 //        return null;
     }
@@ -140,51 +127,34 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
 
     public void onMapReady(GoogleMap googleMap) {
         mMap = googleMap;
-//       for(int i=0;i<10;i++){
-//           LatLng sydney = new LatLng(-100 + i+10, 100+i);
-//           googleMap.addMarker(new MarkerOptions().position(sydney)
-//                   .title("Marker in Sydney"));
-//           googleMap.moveCamera(CameraUpdateFactory.newLatLng(sydney));
-//
-//       }
+
         MqttLogController mqttLogController = new MqttLogController();
         mqttLogController.listener = new MqttLogController.OnMessageListener() {
             @Override
             public void onMessage(String topic, String message) {
-                Log.d("onMessage", message);
-                try {
-                    JSONObject jsonMessage = new JSONObject(message);
-                    Log.d("jsonMessage",convertToSensorMarker(jsonMessage).toString());
-                } catch (JSONException e) {
-                    Log.e("jsonMessage", e.toString());
-                }
+//                Log.d("onMessage", message);
+//                try {
+//                    JSONObject jsonMessage = new JSONObject(message);
+//                    Log.d("jsonMessage",convertToSensorMarker(jsonMessage).toString());
+//                } catch (JSONException e) {
+//                    Log.e("jsonMessage", e.toString());
+//                }
             }
 
             @Override
             public void onHandleSensorMessage(String topic, String message) {
-                Log.d("onHandleSensorMessage", message);
-//                LatLng sydney = new LatLng(24, 108);
-//                mMap.addMarker(new MarkerOptions().position(sydney)
-//                        .title("Marker in Sydney"));
-//                mMap.moveCamera(CameraUpdateFactory.newLatLng(sydney));
+
+
                 try {
                     JSONObject jsonMessage = new JSONObject(message);
                     String stringSensorId = jsonMessage.optString("sensorID");
                     Log.d("SensorId", stringSensorId);
-
-                    addSensorMarker(jsonMessage);
-
-//                    SensorMarker sensorMarker = convertToSensorMarker(jsonMessage);
-//                    int index = indexOfSensorData(sensorMarker.getSensorId());
-//                    if (index!=-1) {
-//                        // Update Sensor Attribute
-//                        sensorDataList.set(index,sensorMarker);
-//                        // Get sensorMarker in Sensor ArrayList                    } else {
-//                        // Create New Sensor
-////                        addSensorMarker(jsonMessage);
-//                    }else{
-//                        addSensorMarker(jsonMessage);
-//                    }
+                    Log.d("Index Of ", indexOfSensorData(stringSensorId) + "");
+                    Log.d("DATA LIST  ", sensorDataList.toString());
+                    int index = indexOfSensorData(stringSensorId);
+                    if(index ==-1)
+                        addSensorMarker(new SensorMarker(jsonMessage));
+                    else updateSensorMarker(new SensorMarker(jsonMessage),index);
 
                 } catch (JSONException e) {
                     Log.e("jsonMessage", e.toString());
@@ -196,7 +166,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
 
     @Override
     public void onLocationChanged(Location location) {
-            Log.d("onLocationChanged",location.getLatitude()+" + "+location.getLongitude());
+        Log.d("onLocationChanged", location.getLatitude() + " + " + location.getLongitude());
     }
 
     @Override
@@ -214,9 +184,4 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
 
     }
 
-    @Override
-    public void run() {
-        LatLng latLng = new LatLng(10, 108);
-        mMap.addMarker(new MarkerOptions().position(latLng));
-    }
 }
