@@ -10,27 +10,34 @@ import org.json.JSONObject;
 
 import java.sql.Struct;
 
-public class TsunamiSensorMarker {
+public class SensorMarker {
+    private String sensorId;
     private double lat;
     private double lng;
     private String gatewayId;
     private double force;
     private Gyroscope gyroscope;
 
-    public TsunamiSensorMarker() {
-        lat = 0;
-        lng = 0;
-        gatewayId = "Unknown";
-        gyroscope = new Gyroscope(0, 0, 0);
-    }
 
-    public TsunamiSensorMarker(String gatewayId, double lat, double lng, double force, Gyroscope gyroscope) {
+
+//    public SensorMarker() {
+//        lat = 0;
+//        lng = 0;
+//        gatewayId = "Unknown";
+//        gyroscope = new Gyroscope(0, 0, 0);
+//    }
+
+    public SensorMarker(String sensorId, String gatewayId, double lat, double lng, double force, Gyroscope gyroscope) {
+        this.sensorId = sensorId;
         this.lat = lat;
         this.lng = lng;
         this.gatewayId = gatewayId;
         this.force = force;
         this.gyroscope = gyroscope;
     }
+
+//    public void createSensorMaker()
+    public String getSensorId() { return sensorId; }
 
     public double getLat() {
         return lat;
@@ -64,16 +71,7 @@ public class TsunamiSensorMarker {
         this.force = force;
     }
 
-    public Gyroscope getGyroscope() {
-        return gyroscope;
-    }
-
-    public void setGyroscope(Gyroscope gyroscope) {
-        this.gyroscope = gyroscope;
-    }
-
     public void setGyroscope(JSONObject object){
         
     }
-
 }
