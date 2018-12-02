@@ -52,7 +52,7 @@ public class SensorMarker {
 
     }
 
-    public void updateSensorMarker(SensorMarker sensorMarker,GoogleMap map){
+    public void updateSensorMarker(SensorMarker sensorMarker){
         gatewayId = sensorMarker.getGatewayId();
         lat = sensorMarker.getLat();
         lng = sensorMarker.getLng();
@@ -60,8 +60,6 @@ public class SensorMarker {
         gyroscope= sensorMarker.getGyroscope();
         latLng = sensorMarker.getLatLng();
         updatePosition();
-        setCircle(map);
-
     }
 
     private void updatePosition() {
@@ -140,8 +138,7 @@ public class SensorMarker {
     public void setCircle(GoogleMap map) {
         this.circle = map.addCircle(new CircleOptions().center(latLng));
         this.circle.setStrokeColor(Color.RED);
-        this.circle.setRadius(10000+force);
-//        this.circle.setFillColor();
-
+        this.circle.setRadius(100+force);
+        this.circle.setFillColor(Color.parseColor("#60CCFF0000"));
     }
 }

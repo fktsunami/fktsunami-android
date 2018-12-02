@@ -1,25 +1,30 @@
 package devfest.tnp.fktsunami;
 
 import android.Manifest;
+import android.app.AlertDialog;
 import android.content.pm.PackageManager;
 import android.location.Location;
 import android.location.LocationListener;
 import android.location.LocationManager;
 import android.support.annotation.NonNull;
+import android.support.v4.app.DialogFragment;
 import android.support.v4.app.FragmentActivity;
 import android.os.Bundle;
 import android.support.v4.content.ContextCompat;
 import android.util.Log;
+import android.widget.Toast;
 
 import com.google.android.gms.common.api.GoogleApiClient;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.SupportMapFragment;
+import com.google.android.gms.maps.model.LatLng;
 
 import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.util.ArrayList;
+import java.util.Map;
 
 public class MapsActivity extends FragmentActivity implements OnMapReadyCallback, LocationListener {
     // config
@@ -83,12 +88,28 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     }
 
     public void updateSensorMarker(SensorMarker sensorMarker, int index) {
-
         try {
             runOnUiThread(new Runnable() {
                 @Override
                 public void run() {
-                    sensorDataList.get(index).updateSensorMarker(sensorMarker,mMap);
+                    sensorDataList.get(index).updateSensorMarker(sensorMarker);
+                    Double force = sensorMarker.getForce();
+                    if (force > 10) {
+                        Double sensorLatLocation = sensorMarker.getLat();
+                        Double sensorLngLocation = sensorMarker.getLng();
+                        Location sensorLocation = new Location("sensorLocation");
+                        sensorLocation.setLatitude(sensorLatLocation);
+                        sensorLocation.setLongitude(sensorLngLocation);
+
+                        Location myLocation = new Location("myLocation");
+                        myLocation.setLatitude(16.062180);
+                        myLocation.setLongitude(108.247865);
+                        Float distanceBetweenMyLocationToSensor = myLocation.distanceTo(sensorLocation);
+
+                        Log.d("Distance Between", distanceBetweenMyLocationToSensor.toString());
+                        if(distanceBetweenMyLocationToSensor<500)
+                            Toast.makeText(MapsActivity.this,"Cảnh Báo Sóng Thần... Chạy Ngay Đi",Toast.LENGTH_LONG).show();
+                    }
                 }
             });
         } catch (Exception e) {
@@ -96,7 +117,17 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         }
 
     }
-
+//    public void alert(String title, String message){
+//        // 1. Instantiate an AlertDialog.Builder with its constructor
+//        AlertDialog.Builder builder = new AlertDialog.Builder(this);
+//
+//// 2. Chain together various setter methods to set the dialog characteristics
+//        builder.setMessage(message)
+//                .setTitle(title);
+//
+//// 3. Get the AlertDialog from create()
+//        AlertDialog dialog = builder.create();
+//    }
     public SensorMarker convertToSensorMarker(JSONObject object) {
         String sensorId = object.optString("sensorId");
         String gatewayId = object.optString("gatewayId");
@@ -143,8 +174,6 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
 
             @Override
             public void onHandleSensorMessage(String topic, String message) {
-
-
                 try {
                     JSONObject jsonMessage = new JSONObject(message);
                     String stringSensorId = jsonMessage.optString("sensorID");
@@ -152,7 +181,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                     Log.d("Index Of ", indexOfSensorData(stringSensorId) + "");
                     Log.d("DATA LIST  ", sensorDataList.toString());
                     int index = indexOfSensorData(stringSensorId);
-                    if(index ==-1)
+                    if(index == -1)
                         addSensorMarker(new SensorMarker(jsonMessage));
                     else updateSensorMarker(new SensorMarker(jsonMessage),index);
 
