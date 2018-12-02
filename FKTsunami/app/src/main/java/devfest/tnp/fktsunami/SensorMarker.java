@@ -143,7 +143,7 @@ public class SensorMarker {
     public void setCircle(GoogleMap map) {
         this.circle = map.addCircle(new CircleOptions().center(latLng));
         this.circle.setStrokeColor(Color.RED);
-        this.circle.setRadius(100+force);
+        this.circle.setRadius(500+force);
         this.circle.setFillColor(Color.BLUE);
 //        map.moveCamera(CameraUpdateFactory.newLatLng(latLng));
     }
