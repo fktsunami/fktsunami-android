@@ -2,6 +2,7 @@ package devfest.tnp.fktsunami;
 
 import android.graphics.Color;
 
+import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.model.Circle;
 import com.google.android.gms.maps.model.CircleOptions;
@@ -95,6 +96,9 @@ public class SensorMarker {
     public void setMarkerOptions(MarkerOptions markerOptions) {
         this.markerOptions = markerOptions;
         this.markerOptions.position(latLng);
+
+
+
     }
 
     public String getSensorId() { return sensorId; }
@@ -133,12 +137,14 @@ public class SensorMarker {
     public void setLatLng(LatLng latLng){
         this.latLng = latLng;
         markerOptions.position(latLng);
+
     }
 
     public void setCircle(GoogleMap map) {
         this.circle = map.addCircle(new CircleOptions().center(latLng));
         this.circle.setStrokeColor(Color.RED);
         this.circle.setRadius(100+force);
-        this.circle.setFillColor(Color.parseColor("#60CCFF0000"));
+        this.circle.setFillColor(Color.BLUE);
+//        map.moveCamera(CameraUpdateFactory.newLatLng(latLng));
     }
 }

@@ -102,13 +102,13 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                         sensorLocation.setLongitude(sensorLngLocation);
 
                         Location myLocation = new Location("myLocation");
-                        myLocation.setLatitude(16.062180);
-                        myLocation.setLongitude(108.247865);
+                        myLocation.setLatitude(16.062380);
+                        myLocation.setLongitude(108.249865);
                         Float distanceBetweenMyLocationToSensor = myLocation.distanceTo(sensorLocation);
 
                         Log.d("Distance Between", distanceBetweenMyLocationToSensor.toString());
                         if(distanceBetweenMyLocationToSensor<500)
-                            Toast.makeText(MapsActivity.this,"Cảnh Báo Sóng Thần... Chạy Ngay Đi",Toast.LENGTH_LONG).show();
+                            Toast.makeText(MapsActivity.this,"Warning Tsunami near by you!!!",Toast.LENGTH_LONG).show();
                     }
                 }
             });
