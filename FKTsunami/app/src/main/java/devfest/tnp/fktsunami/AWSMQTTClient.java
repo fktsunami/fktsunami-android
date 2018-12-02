@@ -63,7 +63,7 @@ class AwsMqttClient {
                     String message = new String(bytes, "UTF-8");
                     mMqttListener.onMessageReceived(s, message);
                 } catch (Exception e) {
-                    Log.d(TAG, "Fail to decode message");
+                    Log.d(TAG, "Fail to decode message" + e.toString());
                 }
             }
         }

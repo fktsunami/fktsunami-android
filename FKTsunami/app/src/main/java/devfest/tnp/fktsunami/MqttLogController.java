@@ -3,10 +3,18 @@ package devfest.tnp.fktsunami;
 
 import android.app.Activity;
 import android.location.Location;
+import android.location.LocationListener;
+import android.location.LocationManager;
+import android.os.Bundle;
 import android.os.Handler;
 import android.os.HandlerThread;
+import android.provider.Settings;
+import android.support.annotation.NonNull;
 import android.util.Log;
+import android.widget.Toast;
 
+import com.google.android.gms.maps.GoogleMap;
+import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.gson.Gson;
 
 import org.json.JSONException;
@@ -14,6 +22,7 @@ import org.json.JSONObject;
 
 import java.util.Locale;
 import java.util.Objects;
+import java.util.UUID;
 
 /**
  * Created by Admin on 17/05/2018.
@@ -50,17 +59,20 @@ public class MqttLogController implements LogController, MqttListener {
 //        mDrone = DroneApplication.getDrone();
 //        mDrone.addOnDroneAttributeChangedListener(this);
 //        subscribeMyOwnTopics();
+
+        UUID uuid= UUID.randomUUID();
         mHandlerThread = new HandlerThread("MyOwnMQTT");
         mHandlerThread.start();
         mHandler = new Handler(mHandlerThread.getLooper(), message -> {
             switch (message.what) {
                 case MSG_SEND_TELEMETRY:
-//                    publishTelemetry();
+                    Log.d("DEBUG", "DEBUGADASDSAD");
+                    publishLocation(uuid);
                     return true;
             }
             return false;
         });
-        mHandler.sendEmptyMessageDelayed(MSG_SEND_TELEMETRY, 1000);
+        mHandler.sendEmptyMessageDelayed(MSG_SEND_TELEMETRY, 10000);
     }
 
     @Override
@@ -69,6 +81,32 @@ public class MqttLogController implements LogController, MqttListener {
 //        mHandlerThread.interrupt();
         mAwsMqttClient.disconnect();
 //        mDrone.removeOnDroneAttributeChangedListener(this);
+    }
+    private void publishLocation(UUID uuid) {
+        Log.d("TEST", "TEST");
+        JSONObject locationUser = new JSONObject();
+
+        putParamsToJson(locationUser,"userId", uuid);
+        putParamsToJson(locationUser,"lat", 16.062380);
+        putParamsToJson(locationUser,"lng", 108.249865);
+        Log.d("ass ",locationUser.toString());
+
+        String topicName = uuid.toString() + "/user";
+
+        Log.d("topicName", topicName);
+
+        mAwsMqttClient.publishMessage(topicName, locationUser.toString());
+        mHandler.sendEmptyMessageDelayed(MSG_SEND_TELEMETRY, 10000);
+    }
+    public static void putParamsToJson(@NonNull   JSONObject object, String key, Object value) {
+        if (value != null) {
+            try {
+                object.put(key, value);
+            } catch (JSONException e) {
+                e.printStackTrace();
+            }
+        }
+
     }
 
 
